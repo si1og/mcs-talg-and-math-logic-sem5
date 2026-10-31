@@ -3,16 +3,24 @@
 #include <algorithm>
 #include <stdexcept>
 
-CellularAutomaton::CellularAutomaton(const std::size_t size)
-    : size_(size), cells_(size * size), randomEngine_(std::random_device{}()) {
+CellularAutomaton::CellularAutomaton(const std::size_t size, const std::uint32_t rule)
+    : size_(size), rule_(rule), cells_(size * size),
+      randomEngine_(std::random_device{}()) {
     if (size == 0) {
         throw std::invalid_argument("Field size must be positive");
     }
+    buildTruthTable();
 }
 
 std::size_t CellularAutomaton::size() const noexcept { return size_; }
 
 std::uint64_t CellularAutomaton::generation() const noexcept { return generation_; }
+
+std::uint32_t CellularAutomaton::rule() const noexcept { return rule_; }
+
+const CellularAutomaton::TruthTable& CellularAutomaton::truthTable() const noexcept {
+    return truthTable_;
+}
 
 bool CellularAutomaton::cell(const std::size_t row, const std::size_t column) const {
     validateCoordinates(row, column);
@@ -78,9 +86,9 @@ void CellularAutomaton::step() {
             const std::size_t leftColumn = (column + size_ - 1) % size_;
             const std::size_t rightColumn = (column + 1) % size_;
             next[index(row, column)] = static_cast<Cell>(transition(
-                previous(topRow, column), previous(row, leftColumn),
-                previous(row, column), previous(row, rightColumn),
-                previous(bottomRow, column)));
+                previous(row, column), previous(topRow, column),
+                previous(bottomRow, column), previous(row, leftColumn),
+                previous(row, rightColumn)));
         }
     }
     cells_.swap(next);
@@ -93,20 +101,28 @@ void CellularAutomaton::run(const std::size_t iterations) {
     }
 }
 
-bool CellularAutomaton::transition(const bool top, const bool left, const bool center,
-                                   const bool right, const bool bottom) noexcept {
+bool CellularAutomaton::transition(const bool center, const bool top, const bool bottom,
+                                   const bool left, const bool right) const noexcept {
+    // порядок аргументов: центр, верх, низ, лево, право
     const std::uint32_t combination =
-        (static_cast<std::uint32_t>(top) << 4u) |
-        (static_cast<std::uint32_t>(left) << 3u) |
-        (static_cast<std::uint32_t>(center) << 2u) |
-        (static_cast<std::uint32_t>(right) << 1u) |
-        static_cast<std::uint32_t>(bottom);
-    return ((Rule >> combination) & 1u) != 0;
+        (static_cast<std::uint32_t>(center) << 4u) |
+        (static_cast<std::uint32_t>(top) << 3u) |
+        (static_cast<std::uint32_t>(bottom) << 2u) |
+        (static_cast<std::uint32_t>(left) << 1u) |
+        static_cast<std::uint32_t>(right);
+    return truthTable_[combination] != 0;
 }
 
 std::size_t CellularAutomaton::index(const std::size_t row,
                                      const std::size_t column) const {
     return row * size_ + column;
+}
+
+void CellularAutomaton::buildTruthTable() noexcept {
+    for (std::size_t combination = 0; combination < truthTable_.size(); ++combination) {
+        truthTable_[combination] =
+            static_cast<Cell>((rule_ >> combination) & 1u);
+    }
 }
 
 void CellularAutomaton::validateCoordinates(const std::size_t row,

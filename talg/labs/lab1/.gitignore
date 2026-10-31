@@ -3,3 +3,9 @@ build/
 cmake-build-*/
 .DS_Store
 *.user
+report/*.aux
+report/*.fdb_latexmk
+report/*.fls
+report/*.log
+report/*.out
+report/*.toc

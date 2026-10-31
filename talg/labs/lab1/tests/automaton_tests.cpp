@@ -6,22 +6,34 @@
 
 namespace {
 void testTruthTable() {
+    CellularAutomaton automaton;
     for (std::uint32_t value = 0; value < 32; ++value) {
-        const bool actual = CellularAutomaton::transition(
+        const bool actual = automaton.transition(
             value & 16u, value & 8u, value & 4u, value & 2u, value & 1u);
-        assert(actual == (((CellularAutomaton::Rule >> value) & 1u) != 0));
+        assert(actual == (automaton.truthTable()[value] != 0));
+        assert(actual == (((CellularAutomaton::DefaultRule >> value) & 1u) != 0));
     }
+}
+
+void testCustomRule() {
+    constexpr std::uint32_t rule = 1u << 31u;
+    CellularAutomaton automaton(3, rule);
+    assert(automaton.rule() == rule);
+    assert(automaton.truthTable()[31] == 1);
+    assert(automaton.truthTable()[0] == 0);
+    assert(automaton.transition(true, true, true, true, true));
+    assert(!automaton.transition(false, false, false, false, false));
 }
 
 void testToroidalBoundary() {
     CellularAutomaton automaton(3);
     automaton.setCell(0, 0, true);
-    automaton.setCell(0, 2, true);
+    automaton.setCell(0, 1, true);
     automaton.step();
 
     // Для (0, 2) правая клетка — (0, 0) из-за склейки границ.
-    // Вместе с живым центром это 00110₂ = 6, а бит 6 правила равен 1.
-    // Без тороидальной склейки комбинация была бы 00100₂, чей бит равен 0.
+    // Вместе с живой клеткой слева это 00011₂ = 3, а бит 3 правила равен 1.
+    // Без тороидальной склейки комбинация была бы 00010₂, чей бит равен 0.
     assert(automaton.cell(0, 2));
     assert(automaton.generation() == 1);
 }
@@ -45,6 +57,7 @@ void testSeededRandomization() {
 
 int main() {
     testTruthTable();
+    testCustomRule();
     testToroidalBoundary();
     testSynchronousUpdate();
     testSeededRandomization();
