@@ -1,0 +1,5 @@
+ref/
+build/
+cmake-build-*/
+.DS_Store
+*.user
