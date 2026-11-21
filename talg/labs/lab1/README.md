@@ -53,3 +53,12 @@ typst compile --root . report/report.typ
 ```sh
 typst watch --root . report/report.typ
 ```
+
+Для обновления графиков раздела 5.2 нужны Python 3.10 или новее и GNU plotutils (`graph`).
+Средние плотности передаются в скрипт через стандартный вывод, а номера
+поколений и периоды выводятся в терминал.
+
+```sh
+cmake --build build --target automaton_analysis
+./build/automaton_analysis --random-density | python3 report/figures/plot_random_density.py
+```

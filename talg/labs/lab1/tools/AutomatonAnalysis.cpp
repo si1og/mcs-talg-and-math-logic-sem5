@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace {
 struct Result {
@@ -27,11 +28,13 @@ double density(const CellularAutomaton& automaton) {
     return static_cast<double>(alive) / automaton.cells().size();
 }
 
-Result observe(CellularAutomaton automaton, const std::size_t limit) {
+Result observe(CellularAutomaton automaton, const std::size_t limit,
+               std::vector<double>* densities = nullptr) {
     std::unordered_map<std::string, std::size_t> seen;
     Result result;
     for (std::size_t step = 0; step <= limit; ++step) {
         const double currentDensity = density(automaton);
+        if (densities) densities->push_back(currentDensity);
         result.minDensity = std::min(result.minDensity, currentDensity);
         result.maxDensity = std::max(result.maxDensity, currentDensity);
         const auto [iterator, inserted] = seen.emplace(key(automaton), step);
@@ -62,9 +65,59 @@ void print(const std::string& name, const std::size_t size, const Result& result
     }
     std::cout << '\n';
 }
+
+void analyzeRandomDensity() {
+    constexpr std::size_t fieldSize = 10;
+    constexpr std::size_t limit = 10'000;
+    constexpr std::uint32_t runs = 20;
+    std::cout << "probability,generation,mean_density\n";
+    std::cerr << "probability cycles seed cycle_start first_repeat period\n";
+
+    for (const double probability : {0.1, 0.3, 0.5, 0.7, 0.9}) {
+        std::vector<double> sums(limit + 1);
+        Result latestCycle;
+        std::uint32_t latestSeed = 0;
+        std::size_t cycles = 0;
+        for (std::uint32_t seed = 1; seed <= runs; ++seed) {
+            CellularAutomaton automaton(fieldSize);
+            automaton.randomize(probability, seed);
+            std::vector<double> densities;
+            densities.reserve(limit + 1);
+            const Result result = observe(automaton, limit, &densities);
+            if (result.period != 0) {
+                ++cycles;
+                if (latestSeed == 0 || result.firstSeen > latestCycle.firstSeen) {
+                    latestCycle = result;
+                    latestSeed = seed;
+                }
+                // The first repeated configuration fixes the rest of the trajectory.
+                while (densities.size() <= limit) {
+                    densities.push_back(densities[densities.size() - result.period]);
+                }
+            }
+            for (std::size_t generation = 0; generation <= limit; ++generation) {
+                sums[generation] += densities[generation];
+            }
+        }
+        for (std::size_t generation = 0; generation <= limit; ++generation) {
+            std::cout << probability << ',' << generation << ','
+                      << sums[generation] / runs << '\n';
+        }
+        std::cerr << probability << ' ' << cycles;
+        if (latestSeed != 0) {
+            std::cerr << ' ' << latestSeed << ' ' << latestCycle.firstSeen
+                      << ' ' << latestCycle.measuredAt << ' ' << latestCycle.period;
+        }
+        std::cerr << '\n';
+    }
+}
 } // namespace
 
-int main() {
+int main(int argc, char* argv[]) {
+    if (argc == 2 && std::string(argv[1]) == "--random-density") {
+        analyzeRandomDensity();
+        return 0;
+    }
     std::cout << std::left << std::setw(20) << "scenario" << std::right
               << std::setw(6) << "size" << std::setw(10) << "steps"
               << std::setw(10) << "alive" << std::setw(12) << "density"
