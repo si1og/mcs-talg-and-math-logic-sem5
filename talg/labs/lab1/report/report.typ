@@ -18,3 +18,5 @@
 #include "sections/implementation.typ"
 #pagebreak(weak: true)
 #include "sections/results.typ"
+#pagebreak(weak: true)
+#include "sections/analysis.typ"
