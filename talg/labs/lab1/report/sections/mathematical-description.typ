@@ -112,7 +112,7 @@ $) <eq:transition-rule>
   small(table(
     columns: (12mm, 17mm, 17mm, 17mm, 17mm, 17mm, 12mm),
     align: center,
-    inset: (x: 5pt, y: 2pt),
+    inset: (x: 5pt, y: 4pt),
     stroke: 0.5pt,
     table.header(
       [$k$], [$s_(i,j)^t$], [$s_(i-1,j)^t$], [$s_(i+1,j)^t$],

@@ -41,8 +41,15 @@ next = truthTable[k]
 Для сборки используются локальный пакет `@local/poly-report:0.1.0` и шрифты
 CM-Super, как в отчёте по базам данных.
 
-Из каталога лабораторной:
+Запускайте сборку из каталога `labs/lab1`. Параметр `--root .` даёт Typst
+доступ к файлам в `src/`, из которых отчёт берёт листинги.
 
 ```sh
-typst compile report/report.typ
+typst compile --root . report/report.typ
+```
+
+Для автоматической пересборки при изменении исходников запустите в том же каталоге:
+
+```sh
+typst watch --root . report/report.typ
 ```
