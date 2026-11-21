@@ -13,6 +13,10 @@
 #report-outline()
 #pagebreak()
 
+#include "sections/introduction.typ"
+#pagebreak(weak: true)
+#include "sections/task-statement.typ"
+#pagebreak(weak: true)
 #include "sections/mathematical-description.typ"
 #pagebreak()
 #include "sections/implementation.typ"
@@ -20,3 +24,9 @@
 #include "sections/results.typ"
 #pagebreak(weak: true)
 #include "sections/analysis.typ"
+#pagebreak(weak: true)
+#include "sections/conclusion.typ"
+#pagebreak(weak: true)
+#include "sections/sources.typ"
+#pagebreak(weak: true)
+#include "sections/appendix.typ"
