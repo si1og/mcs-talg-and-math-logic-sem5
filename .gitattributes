@@ -1,0 +1,4 @@
+# Exclude LaTeX report sources from GitHub language statistics.
+*.tex linguist-documentation
+*.sty linguist-documentation
+*.cls linguist-documentation

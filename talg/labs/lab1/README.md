@@ -34,3 +34,15 @@ next = truthTable[k]
 Класс `CellularAutomaton` не зависит от Qt. Интерфейс изменяет модель только
 через публичные методы (`setCell`, `toggleCell`, `randomize`, `step`, `run`) и
 читает состояние через `cell`, `cells`, `size` и `generation`.
+
+## Отчёт
+
+Исходник Typst находится в [`report/report.typ`](report/report.typ).
+Для сборки используются локальный пакет `@local/poly-report:0.1.0` и шрифты
+CM-Super, как в отчёте по базам данных.
+
+Из каталога лабораторной:
+
+```sh
+typst compile report/report.typ
+```
