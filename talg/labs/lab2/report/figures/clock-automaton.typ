@@ -11,7 +11,13 @@
   let transition = edge.with(marks: "-|>", stroke: 0.7pt + black, label-sep: 3pt)
   let cycle = transition.with(bend: 45deg, stroke: 1.2pt + black)
   let output(input, index: 0) = [#input / $z_#index$]
-  let action(s, input, index, side) = transition(s, output(input, index: index), loop: side, size: 15mm)
+  let action(s, input, index, side, idle: none) = {
+    let command = output(input, index: index)
+    let caption = if idle == none { command } else {
+      align(center, stack(dir: ttb, spacing: 2pt, command, output(idle)))
+    }
+    transition(s, caption, loop: side, size: 15mm)
+  }
 
   align(center, cetz.canvas(length: 1mm, {
     // Вершины основного цикла имеют углы 0°, 90°, 180° и 270°.
@@ -21,63 +27,53 @@
     state((0, -49), 12)
     state((0, 86), 7)
 
-    state((102, 47), 1)
-    state((172, 47), 2)
-    state((172, -47), 3)
-    state((102, -47), 4)
-    state((137, -18), 5)
-    node((137, 16), $m$, name: <check-minutes>, shape: "diamond",
-      width: 11mm, height: 9mm, fill: white, stroke: 0.7pt + black)
+    state((118, 47), 1)
+    state((182, 47), 2)
+    state((182, -47), 3)
+    state((118, -47), 4)
+    state((118, 0), 5)
 
     state((-98, 39), 9)
-    state((-151, 39), 10)
+    state((-160, 39), 10)
     state((-111, -43), 11)
 
     transition((8, 0), <s0>, snap-to: (none, auto))
     cycle(<s0>, <s6>, output($a$), label-side: right)
     cycle(<s6>, <s8>, output($a$), label-side: left)
-    cycle(<s8>, <s12>, output($a$), label-side: left)
+    cycle(<s8>, <s12>, output($a$), label-side: left, label-pos: 67%)
     cycle(<s12>, <s0>, output($a$), label-side: right)
+    action(<s0>, $b$, 0, top)
 
-    transition(<s6>, <s7>, output($b$), bend: 23deg)
-    transition(<s7>, <s6>, output($b$), bend: 23deg)
-    action(<s6>, $a+b$, 6, right)
-    action(<s12>, $b$, 11, left)
+    transition(<s6>, <s7>, output($b$, index: 14), bend: 23deg, label-side: left)
+    transition(<s7>, <s6>, output($b$, index: 15), bend: 23deg, label-side: right)
+    action(<s6>, $c$, 6, right)
+    action(<s7>, $a, c$, 0, right)
+    action(<s12>, $b$, 11, left, idle: $c$)
 
-    transition(<s0>, <s1>, output($a+b$, index: 1), bend: 23deg, label-pos: 76%)
-    transition(<s1>, <s2>, output($a$))
-    transition(<s2>, <s3>, output($a$), label-pos: 34%)
-    transition(<s3>, <s4>, output($a$))
-    transition(<s4>, <s1>, output($a$), label-pos: 28%)
-    action(<s1>, $b$, 2, top)
-    action(<s2>, $b$, 3, top)
-    action(<s3>, $b$, 4, bottom)
-    action(<s4>, $b$, 5, bottom)
+    transition(<s0>, <s1>, output($c$, index: 1), label-side: top)
+    transition(<s1>, <s2>, output($c$))
+    transition(<s2>, <s3>, output($c$), label-pos: 34%)
+    transition(<s3>, <s4>, output($c$))
+    action(<s1>, $b$, 2, top, idle: $a$)
+    action(<s2>, $b$, 3, top, idle: $a$)
+    action(<s3>, $b$, 4, bottom, idle: $a$)
+    action(<s4>, $b$, 5, bottom, idle: $a$)
 
-    let confirm = transition.with(label: output($a+b$), label-angle: auto)
-    confirm(<s1>, <check-minutes>, label-side: top)
-    confirm(<s2>, <check-minutes>, label-side: top)
-    confirm(<s3>, <check-minutes>, label-side: right)
-    confirm(<s4>, <check-minutes>, label-side: left, label-pos: 27%)
-    transition(<check-minutes>, <s0>, $[m = 0]$, label-pos: 72%,
-      label-side: bottom, label-angle: auto, layer: 0, crossing: true)
-    transition(<check-minutes>, <s5>, $[m = 1]$, label-side: right, label-angle: auto)
-    transition(<s5>, <s0>, output($b$), label-pos: 68%, label-side: bottom,
-      layer: 0, crossing: true)
+    let confirm = value => text(size: 12pt, output($c space [m = #value]$))
+    transition(<s4>, <s0>, confirm(0), label-side: bottom, label-angle: auto, label-pos: 36%)
+    transition(<s4>, <s5>, confirm(1), label-side: right)
+    transition(<s5>, <s0>, output($b$), label-side: bottom)
+    transition(<s5>, <s1>, output($c$), label-side: right)
+    action(<s5>, $a$, 0, right)
 
-    transition(<s8>, <s9>, output($a+b$), bend: 23deg)
-    transition(<s9>, <s8>, output($a+b$), bend: 23deg)
-    transition(<s10>, (-151, 15), (-135, 0), <s8>, output($a+b$),
-      label-pos: 52%, label-side: bottom, corner-radius: 5mm)
-    transition(<s9>, <s10>, output($a$), bend: 23deg)
-    transition(<s10>, <s9>, output($a$), bend: 23deg)
-    action(<s9>, $b$, 8, top)
-    action(<s10>, $b$, 9, top)
-
-    transition(<s8>, <s11>, output($b$), bend: 23deg)
-    transition(<s11>, <s8>, output($a+b$), bend: 23deg)
-    action(<s11>, $a$, 7, left)
-    action(<s11>, $b$, 10, bottom)
+    transition(<s8>, <s9>, output($c$), label-side: top)
+    transition(<s9>, <s10>, output($c$))
+    transition(<s10>, <s11>, output($c$), label-side: left)
+    transition(<s11>, <s8>, output($c$), label-side: top)
+    action(<s8>, $b$, 7, bottom + right)
+    action(<s9>, $b$, 8, top, idle: $a$)
+    action(<s10>, $b$, 9, top, idle: $a$)
+    action(<s11>, $b$, 10, bottom, idle: $a$)
   }))
 
   v(6mm)
@@ -110,31 +106,39 @@
       [Будильник],
       [Установка часов будильника],
       [Установка минут будильника],
-      [Выбор мелодии и включение будильника],
+      [Выбор мелодии будильника],
       [Ежечасный сигнал],
     )),
     legend(z, 0, (
       [Без импульса],
       [Сбросить признак $m$],
-      [Увеличить десятки часов],
-      [Увеличить единицы часов],
-      [Увеличить десятки минут и установить $m$],
-      [Увеличить единицы минут и установить $m$],
+      [Увеличить десятки часов на 1],
+      [Увеличить единицы часов на 1],
+      [Увеличить десятки минут на 1, $m := 1$],
+      [Увеличить единицы минут на 1, $m := 1$],
       [Обнулить секундомер],
-    )),
-    legend(z, 7, (
       [Включить или выключить будильник],
-      [Увеличить часы будильника],
-      [Увеличить минуты будильника],
+    )),
+    legend(z, 8, (
+      [Увеличить часы будильника на 1],
+      [Увеличить минуты будильника на 1],
       [Выбрать мелодию будильника],
       [Выбрать мелодию ежечасного сигнала],
       [Запустить мелодию будильника],
       [Запустить мелодию ежечасного сигнала],
+      [Запустить или продолжить секундомер],
+      [Остановить секундомер с сохранением],
     )),
   )
 
   v(3mm)
-  [Ромб обозначает проверку признака изменения минут $m$ при выходе из корректировки.]
+  [
+    $c$ обозначает совместное нажатие кнопок $a$ и $b$.
+    $m$ показывает, нужно ли после корректировки дождаться запуска часов. \
+    $z_(12)$ выдаётся в заданное время при включённом будильнике.
+    $z_(13)$ выдаётся в начале часа, если в этот момент будильник не сработал.
+    При выдаче звуковых команд состояние сохраняется.
+  ]
 }
 
 #set page("a3", flipped: true, margin: 15mm)
